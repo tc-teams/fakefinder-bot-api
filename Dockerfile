@@ -1,13 +1,11 @@
-FROM golang:alpine as builder
-
-RUN mkdir /build
+FROM golang:1.12 as builder
 
 ADD . /build/
 
 WORKDIR /build
 
-RUN  go get -u github.com/go-telegram-bot-api/telegram-bot-api \
-    && go build -o  main . 
+RUN go get github.com/go-telegram-bot-api/telegram-bot-api && \
+    go build -o  main . 
 
 FROM alpine
 
