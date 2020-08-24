@@ -1,4 +1,4 @@
-package botApi
+package bot
 
 import (
 	"fmt"
@@ -7,23 +7,23 @@ import (
 	"os"
 )
 
-type BotApi struct {
+type Telegram struct {
 	Bot  *tgbotapi.BotAPI
 	Help tgbotapi.UpdateConfig
 	msg  tgbotapi.MessageConfig
 }
 
-func (b *BotApi) ReceiveMessage() error {
+func (t *Telegram) ReceiveMessage() error {
 
-	b.Bot.Debug = true
+	t.Bot.Debug = true
 
 	logrus.WithFields(logrus.Fields{
-		"UserName": b.Bot.Self.UserName,
+		"UserName": t.Bot.Self.UserName,
 	}).Info("Authorized on account")
 
-	b.Help.Timeout = 60
+	t.Help.Timeout = 60
 
-	updates, err := b.Bot.GetUpdatesChan(b.Help)
+	updates, err := t.Bot.GetUpdatesChan(t.Help)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
 			"ErrorUpdate": err,
@@ -44,23 +44,23 @@ func (b *BotApi) ReceiveMessage() error {
 			"Text":      update.Message.Text,
 		}).Info("received message")
 
-		b.msg.ChatID = update.Message.Chat.ID
-		b.msg.Text = update.Message.Text
-		b.msg.ReplyToMessageID = update.Message.MessageID
+		t.msg.ChatID = update.Message.Chat.ID
+		t.msg.Text = fmt.Sprintf("Olá %s.",update.Message.From.FirstName)
+		t.msg.ReplyToMessageID = update.Message.MessageID
 
-		b.Bot.Send(b.msg)
+		t.Bot.Send(t.msg)
 	}
 
 	return nil
 }
 
-func NewBot() (*BotApi, error) {
+func NewBot() (*Telegram, error) {
 	Bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_KEY"))
 	if err != nil {
 		fmt.Println("key not found")
 		return nil, err
 	}
-	return &BotApi{
+	return &Telegram{
 		Bot:  Bot,
 		Help: tgbotapi.NewUpdate(0),
 		msg:  tgbotapi.MessageConfig{},

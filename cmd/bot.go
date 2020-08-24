@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/fake-finder/fakefinder/botApi"
+	"github.com/fake-finder/fakefinder/bot"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +12,7 @@ var botCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("command bot")
 
-		bot, err := botApi.NewBot()
+		bot, err := bot.NewBot()
 		if err != nil {
 			fmt.Println("erro new instance")
 			return err
