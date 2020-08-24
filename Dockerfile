@@ -1,4 +1,4 @@
-FROM golang:1.12 as builder
+FROM golang:alpine as builder
 
 ADD . /build/
 
@@ -13,8 +13,10 @@ RUN adduser -S -D -H -h /app appuser
 
 USER appuser
 
+ENV TELEGRAM_BOT_KEY=$TELEGRAM_BOT_KEY
+
 COPY --from=builder /build/main /app/
 
 WORKDIR /app
 
-EXPOSE 8080
+CMD ["./main","bot"]

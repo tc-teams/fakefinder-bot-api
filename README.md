@@ -9,7 +9,11 @@ This API aims the interaction of our Telegram bot `@fake_finder_bot` with the ot
 
 ## Usage
 
-```go
+```docker
+
+docker build -t gcr.io/model-framing-272522/fakefinder-bot-api:1.0.0 .
+docker run -e TELEGRAM_BOT_KEY=$TELEGRAM_BOT_KEY -d --name bot -t  gcr.io/model-framing-272522/fakefinder-bot-api:1.0.0 
+docker logs bot --follow
 
 ```
 
