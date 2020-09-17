@@ -1,7 +1,7 @@
 package bot
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"strings"
 
@@ -19,14 +19,6 @@ type Telegram struct {
 
 func (t *Telegram) ReceiveMessage() error {
 
-	t.Bot.Debug = true
-
-	logrus.WithFields(logrus.Fields{
-		"UserName": t.Bot.Self.UserName,
-	}).Info("Authorized on account")
-
-	t.Help.Timeout = 60
-
 	updates, err := t.Bot.GetUpdatesChan(t.Help)
 	if err != nil {
 		logrus.WithFields(logrus.Fields{
@@ -36,17 +28,17 @@ func (t *Telegram) ReceiveMessage() error {
 	}
 
 	for update := range updates {
-		if update.Message == nil { // ignore any non-Message Updates
+		if update.Message == nil {
 			continue
 		}
 
-		// logrus.WithFields(logrus.Fields{
-		// 	"UserID":    update.Message.From.ID,
-		// 	"UserName":  update.Message.From.UserName,
-		// 	"FirstName": update.Message.From.FirstName,
-		// 	"LastName":  update.Message.From.LastName,
-		// 	"Text":      update.Message.Text,
-		// }).Info("received message")
+		logrus.WithFields(logrus.Fields{
+			"UserID":    update.Message.From.ID,
+			"UserName":  update.Message.From.UserName,
+			"FirstName": update.Message.From.FirstName,
+			"LastName":  update.Message.From.LastName,
+			"Text":      update.Message.Text,
+		}).Info("received message")
 		t.Msg.ChatID = update.Message.Chat.ID
 		t.Msg.Text = strings.ToUpper(update.Message.Text)
 
@@ -59,13 +51,12 @@ func (t *Telegram) ReceiveMessage() error {
 func (t *Telegram) Listener(updates tgbotapi.UpdatesChannel) error {
 	switch t.Msg.Text {
 	case "OI", "OLA", "OLÁ", "OPA", "SALVE", "/START":
-		t.Msg.Text = "Olá, Para consultar a veracidade de uma notícia digite Consultar ou aperte aqui /consultar"
-	case "/CONSULTAR":
+		t.Msg.Text = "Olá, Para consultar a veracidade de uma notícia digite Consultar ou aperte aqui \n /consultar"
+	case "/CONSULTAR","CONSULTAR":
 		t.Msg.Text = "Por favor, descreva a notícia em poucas palavras descrevendo os principais pontos."
 		t.Bot.Send(t.Msg)
 		for update := range updates {
-			println("Entrou na poha do for")
-			if update.Message == nil { // ignore any non-Message Updates
+			if update.Message == nil {
 				continue
 			}
 
@@ -73,9 +64,17 @@ func (t *Telegram) Listener(updates tgbotapi.UpdatesChannel) error {
 			t.Msg.Text = strings.ToUpper(update.Message.Text)
 			break
 		}
+		var text string
+		text = t.Msg.Text
+		t.Msg.Text = "Processando requisição"
+		t.Bot.Send(t.Msg)
 
-		app.RequestCrawler(t.Msg.Text)
-
+		resp, err := app.RequestCrawler(text)
+		if err != nil {
+			t.Msg.Text = "erro ao processar a requisição"
+			return err
+		}
+		t.Msg.Text = resp
 	case "/OUTRO":
 		t.Msg.Text = "I'm ok."
 	default:
@@ -88,12 +87,20 @@ func (t *Telegram) Listener(updates tgbotapi.UpdatesChannel) error {
 func NewBot() (*Telegram, error) {
 	Bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_KEY"))
 	if err != nil {
-		fmt.Println("key not found")
-		return nil, err
+		keyNotFound := errors.New("key not found ")
+		return nil, keyNotFound
 	}
+
+	logrus.WithFields(logrus.Fields{
+		"UserName": Bot.Self.UserName,
+	}).Info("Authorized on account")
+	//Bot.Debug = true
+	updateConfig := tgbotapi.NewUpdate(0)
+	updateConfig.Timeout = 60
+
 	return &Telegram{
 		Bot:  Bot,
-		Help: tgbotapi.NewUpdate(0),
+		Help: updateConfig,
 		Msg:  tgbotapi.MessageConfig{},
 	}, nil
 
