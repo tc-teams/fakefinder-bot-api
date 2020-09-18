@@ -11,7 +11,7 @@ type Client struct {
 	*http.Client
 }
 
-func (c *Client) DoRequest(r CrawlerRequest) (*http.Response,error) {
+func (c *Client) DoRequest(r CrawlerRequest) (*http.Response, error) {
 
 	reqBytes, err := json.Marshal(r)
 	if err != nil {
@@ -20,7 +20,7 @@ func (c *Client) DoRequest(r CrawlerRequest) (*http.Response,error) {
 
 	request, err := http.NewRequest(
 		http.MethodPost,
-        "http://104.197.246.105:8080/search/news",
+		"http://localhost:8080/search/news",
 		bytes.NewBuffer(reqBytes),
 	)
 	if err != nil {
@@ -34,7 +34,7 @@ func (c *Client) DoRequest(r CrawlerRequest) (*http.Response,error) {
 		return nil, err
 	}
 
-	return response,nil
+	return response, nil
 }
 
 //NewClient return a new client instance

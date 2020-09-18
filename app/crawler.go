@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"github.com/fake-finder/fakefinder/external"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	"strings"
 )
+
+var empty = string("")
 
 func RequestCrawler(text string) (string, error) {
 	client := external.NewClient()
@@ -15,40 +16,33 @@ func RequestCrawler(text string) (string, error) {
 	var bot external.CrawlerRequest
 	bot.Description = strings.ToLower(text)
 
-    fmt.Println("description",bot.Description)
-	logrus.WithFields(logrus.Fields{
-	}).Info("Do request.....")
+	fmt.Println("description", bot.Description)
+	logrus.WithFields(logrus.Fields{}).Info("Do request.....")
 
 	resp, err := client.DoRequest(bot)
 	if err != nil {
-		return "", err
+		return empty, err
 	}
 
-	logrus.WithFields(logrus.Fields{
-	}).Info("request completed.....")
+	logrus.WithFields(logrus.Fields{}).Info("request completed.....")
 
 	var news external.CrawlerResponse
-	body, err := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(body))
-
 
 	err = json.NewDecoder(resp.Body).Decode(&news)
 	if err != nil {
 		fmt.Println("convert err ", err)
-		return "", err
+		return empty, err
 	}
 	var textResult string
 
 	textResult = news.Description
 	for _, i := range news.Text {
 		textResult += i.Title
-		textResult += i.Link.Encode()
+		textResult += i.Link
 		textResult += i.Similarity
 		textResult += i.Date
 		textResult += "\n"
 	}
-	fmt.Println("result:",textResult)
-
 
 	return textResult, nil
 
