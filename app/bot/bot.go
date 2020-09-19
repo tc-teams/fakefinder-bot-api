@@ -4,17 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/fake-finder/fakefinder/crawler"
 	"net/http"
 	"os"
 	"strings"
 )
+
 var (
-	start = string("/start")
+	start     = string("/start")
 	consultar = string("/consultar")
-
-
 )
-
 
 func TelegramWebHookHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -32,12 +31,23 @@ func TelegramWebHookHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return
 		}
-	case strings.HasPrefix(text,consultar):
+	case strings.HasPrefix(text, consultar):
 		text := strings.TrimPrefix(strings.ToLower(body.Message.Text), consultar)
 		if text == emptyString {
 			text = consultCommand
+			err := TelegramReply(body.Message.Chat.ID, text)
+			if err != nil {
+				return
+			}
+			break
+
 		}
-		err := TelegramReply(body.Message.Chat.ID, text)
+		result, err := crawler.RequestCrawler(text)
+		if err != nil {
+			return
+		}
+
+		err = TelegramReply(body.Message.Chat.ID, result)
 		if err != nil {
 			return
 		}
