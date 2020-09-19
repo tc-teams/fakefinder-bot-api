@@ -12,7 +12,7 @@ func Run() *handlers.Router {
 	mux.AddRoute(&handlers.Context{
 		Name:    "bot api ",
 		Method:  http.MethodPost,
-		Path:    "/telegram/bot/api",
+		Path:    "/",
 		Handler: bot.TelegramWebHookHandler,
 	})
 	return mux
