@@ -4,16 +4,16 @@ import (
 	"net/http"
 
 	"github.com/fake-finder/fakefinder/app/bot"
-	"github.com/fake-finder/fakefinder/handler"
+	"github.com/fake-finder/fakefinder/handlers"
 )
 
-func Run() handler.Router {
-	mux := handler.NewRouteInstance()
-	mux.AddRoute(&handler.Context{
-		Name:    "Pet",
-		Method:  http.MethodGet,
-		Path:    "/hello/pet/project",
-		Handler: bot.ReceiveMessage(),
+func Run() *handlers.Router {
+	mux := handlers.NewRouter()
+	mux.AddRoute(&handlers.Context{
+		Name:    "bot api ",
+		Method:  http.MethodPost,
+		Path:    "/telegram/bot/api",
+		Handler: bot.TelegramWebHookHandler,
 	})
 	return mux
 }

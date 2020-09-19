@@ -13,7 +13,9 @@ var botCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("command bot")
 
-		if err := app.Run(); err != nil {
+		app := app.Run()
+
+		if err := app.Server(); err != nil {
 			fmt.Println("error", err)
 			return err
 		}
