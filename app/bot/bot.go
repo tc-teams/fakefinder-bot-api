@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/fake-finder/fakefinder/crawler"
@@ -14,7 +13,7 @@ import (
 var (
 	start     = string("/start")
 	consultar = string("/consultar")
-	botToken  = os.Getenv("TELEGRAM_BOT_API")
+	botToken  = "1228162506:AAFQr_ipJ3dsaOieJFupA5Pw4BlhuRFoOyE"
 )
 
 func TelegramWebHookHandler(w http.ResponseWriter, r *http.Request) {
