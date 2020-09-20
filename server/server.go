@@ -5,14 +5,14 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 type ServerTls struct {
 	*http.Server
-	*tls.Config
 }
 
-var cfgTls bool
+var cfgTls = true
 
 const port = ":8080"
 
@@ -26,11 +26,13 @@ func (s *ServerTls) Start(c context.Context, h http.Handler) error {
 	fmt.Printf("Create a sample server, port %s , with tls : %v", s.addr(), s.TlsConfig())
 
 	if cfgTls {
+		fmt.Println("https")
 		err := s.ListenAndServeTLS("", "")
 		if err != nil {
 			return err
 		}
 	}
+	fmt.Println("http")
 	err := s.ListenAndServe()
 	if err != nil {
 		return err
@@ -39,12 +41,21 @@ func (s *ServerTls) Start(c context.Context, h http.Handler) error {
 }
 
 func (s *ServerTls) TlsConfig() bool {
-
-	cert, err := tls.LoadX509KeyPair("/root/go-work/src/github.dxc.com/projects/fakefinder-bot-api/server/tls/localhost.crt", "/root/go-work/src/github.dxc.com/projects/fakefinder-bot-api/server/tls/localhost.key")
+	wd , err := os.Getwd()
+	fmt.Println(wd)
 	if err != nil {
+		cfgTls = false
+		return false
+		}
+
+
+	cert, err := tls.LoadX509KeyPair(fmt.Sprintf("%v/tls/localhost.crt", wd), fmt.Sprintf("%v/tls/localhost.key", wd))
+	if err != nil {
+		fmt.Println(err)
+		cfgTls = false
 		return false
 	}
-	s.TLSConfig = &tls.Config{
+	s.Server.TLSConfig = &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		MinVersion:   tls.VersionTLS12,
 	}

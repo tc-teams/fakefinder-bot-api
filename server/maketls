@@ -2,6 +2,6 @@
 mkdir certs
 rm tls/*
 echo "make server private key and csr(informations)"
-openssl req  -new  -newkey rsa:2048  -nodes  -keyout tls/localhost.key  -out tls/localhost.csr
+openssl req  -new  -newkey rsa:2048  -nodes  -keyout tls/exemplo.key  -out tls/exemplo.csr
 echo "make server cert"
-openssl  x509  -req  -days 365  -in tls/localhost.csr  -signkey tls/localhost.key  -out tls/localhost.crt
+openssl  x509  -req  -days 365  -in tls/exemplo.csr  -signkey tls/exemplo.key  -out tls/exemplo.crt
