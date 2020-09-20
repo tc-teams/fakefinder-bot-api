@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/fake-finder/fakefinder/crawler"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/fake-finder/fakefinder/crawler"
 )
 
 var (
 	start     = string("/start")
 	consultar = string("/consultar")
+	botToken  = os.Getenv("TELEGRAM_BOT_API")
 )
 
 func TelegramWebHookHandler(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +75,7 @@ func TelegramReply(chatID int64, text string) error {
 	}
 
 	resp, err := http.Post(
-		"https://api.telegram.org/bot"+os.Getenv("TELEGRAM_BOT_KEY")+"/"+"sendMessage",
+		"https://api.telegram.org/bot"+botToken+"/"+"sendMessage",
 		"application/json",
 		bytes.NewBuffer(reqBytes),
 	)
