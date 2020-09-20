@@ -1,0 +1,7 @@
+#!/bin/bash
+mkdir certs
+rm tls/*
+echo "make server private key and csr(informations)"
+openssl req  -new  -newkey rsa:2048  -nodes  -keyout tls/localhost.key  -out tls/localhost.csr
+echo "make server cert"
+openssl  x509  -req  -days 365  -in tls/localhost.csr  -signkey tls/localhost.key  -out tls/localhost.crt

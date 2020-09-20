@@ -13,7 +13,7 @@ import (
 
 type Router struct {
 	Mux *mux.Router
-	Srv *server.Client
+	Srv *server.ServerTls
 	Ctx context.Context
 }
 
@@ -53,7 +53,7 @@ func (r *Router) Server() error {
 func NewRouter() *Router {
 	return &Router{
 		Mux: mux.NewRouter().StrictSlash(true),
-		Srv: server.NewClient(),
+		Srv: server.NewServerTLS(),
 		Ctx: context.Background(),
 
 	}

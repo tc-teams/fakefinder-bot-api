@@ -2,34 +2,60 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
-	"time"
 )
 
-//https://gist.github.com/delsner/64e79da93a77aa364e79013d3baeaa3e
-type Client struct {
+type ServerTls struct {
 	*http.Server
+	*tls.Config
 }
+
+var cfgTls bool
 
 const port = ":8080"
 
-func (s *Client) addr() string {
+func (s *ServerTls) addr() string {
 	s.Addr = port
 	return s.Addr
 }
-func (s *Client) Start(c context.Context, handler http.Handler) {
-	fmt.Println("Create a sample server, port:", s.addr())
-	s.Handler = handler
-	s.ListenAndServe()
+func (s *ServerTls) Start(c context.Context, h http.Handler) error {
+	s.Handler = h
+
+	fmt.Printf("Create a sample server, port %s , with tls : %v", s.addr(), s.TlsConfig())
+
+	if cfgTls {
+		err := s.ListenAndServeTLS("", "")
+		if err != nil {
+			return err
+		}
+	}
+	err := s.ListenAndServe()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *ServerTls) TlsConfig() bool {
+
+	cert, err := tls.LoadX509KeyPair("/root/go-work/src/github.dxc.com/projects/fakefinder-bot-api/server/tls/localhost.crt", "/root/go-work/src/github.dxc.com/projects/fakefinder-bot-api/server/tls/localhost.key")
+	if err != nil {
+		return false
+	}
+	s.TLSConfig = &tls.Config{
+		Certificates: []tls.Certificate{cert},
+		MinVersion:   tls.VersionTLS12,
+	}
+
+	return true
+
 }
 
 //NewClient return a new instance of client
-func NewClient() *Client {
-	return &Client{
-		Server: &http.Server{
-			ReadTimeout:  600 * time.Second,
-			WriteTimeout: 600 * time.Second,
-		},
+func NewServerTLS() *ServerTls {
+	return &ServerTls{
+		Server: &http.Server{},
 	}
 }
