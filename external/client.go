@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -13,15 +14,16 @@ type Client struct {
 
 func (c *Client) DoRequest(r CrawlerRequest) (*http.Response, error) {
 
-	reqBytes, err := json.Marshal(r)
+	reqBytes := new(bytes.Buffer)
+	err := json.NewEncoder(reqBytes).Encode(r)
 	if err != nil {
-		return nil, err
+
 	}
 
 	request, err := http.NewRequest(
 		http.MethodPost,
-		"http://localhost:8080/search/news",
-		bytes.NewBuffer(reqBytes),
+		os.Getenv("CRAWLER_URL"),
+		reqBytes,
 	)
 	if err != nil {
 		return nil, err

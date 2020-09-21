@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	wrap "github.com/pkg/errors"
 	"net/http"
 	"strings"
 
@@ -33,7 +34,7 @@ func TelegramWebHookHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case strings.HasPrefix(text, consultar):
-		text := strings.TrimPrefix(strings.ToLower(body.Message.Text), consultar)
+		text := strings.TrimPrefix(strings.ToLower(body.Message.Text), consultar+" ")
 		if text == emptyString {
 			text = consultCommand
 			err := TelegramReply(body.Message.Chat.ID, text)
@@ -67,16 +68,21 @@ func TelegramReply(chatID int64, text string) error {
 		ChatID: chatID,
 		Text:   text,
 	}
-	reqBytes, err := json.Marshal(reqBody)
 
+	reqBytes := new(bytes.Buffer)
+	err := json.NewEncoder(reqBytes).Encode(reqBody)
+	if err != nil {
+		errInvalidEncode := errors.New("was not possible enconde response body")
+		return wrap.Wrap(err, errInvalidEncode.Error())
+
+	}
 	if err != nil {
 		return err
 	}
 
 	resp, err := http.Post(
 		"https://api.telegram.org/bot"+botToken+"/"+"sendMessage",
-		"application/json",
-		bytes.NewBuffer(reqBytes),
+		"application/json", reqBytes,
 	)
 
 	if err != nil {
